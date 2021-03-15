@@ -1,5 +1,7 @@
+key/
 network/*/*
 !network/*/config.json
+!network/*/listOrg.sh
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,soliditytruffle,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,soliditytruffle,macos
