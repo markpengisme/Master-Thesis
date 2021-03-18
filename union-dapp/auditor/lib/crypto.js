@@ -171,6 +171,10 @@ class Crypto  {
         h.end(text)
         return h.digest('hex')
     }
+
+    nonce(length=16) {
+        return crypto.randomBytes(length).toString('hex');
+    }
     
 }
 
