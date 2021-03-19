@@ -2,7 +2,7 @@ require('dotenv').config()
 
 const config = {
     PORT: process.env.PORT || 3000,
-    UNION_PK: process.env.UNION_PK,
+    ADDRESS: process.env.ADDRESS,
     PROVIDER: process.env.PROVIDER,
     CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
     CONTRACT_PATH: process.env.CONTRACT_PATH,
