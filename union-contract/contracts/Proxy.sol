@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.4.22 <0.8.0;
+pragma experimental ABIEncoderV2;
 
 /**
  * @title Storage
@@ -7,8 +8,8 @@ pragma solidity >=0.4.22 <0.8.0;
  */
 contract Proxy {
     event reqEvent(string dataOwner, string reqID);
-    event resEvent(string dataOwner, string shareID);
-    
+    event resEvent(string proxy, string reqID);
+
     struct reqDetails {
         string reqID;
         string dataOwner;
@@ -27,19 +28,38 @@ contract Proxy {
         string nonce;
         string ipfsHash;
     }
-    
-   
+
+    uint constant UNION_NUM = 2;
+    address public auditor;
     mapping (string => reqDetails) req; // reqID -> reqDetails
     mapping (string => resDetails) res; // shareID -> resDetails
+    mapping (string => string[]) resList; // reqID -> shareIDs
+    mapping (string => address[]) resRecord; // reqID -> unions account address
+    mapping (string => bool) resOpen; // reqID -> open response or not
+    
 
-    function proxyRequest (
+    modifier onlyUnion {
+      require(msg.sender != auditor);
+      _;
+   }
+
+   modifier resIsOpen(string memory _reqID) {
+       require(resOpen[_reqID] == true);
+       _;
+   }
+   
+    constructor () public {
+        auditor = msg.sender;
+    }
+
+    function proxyRequest(
         string memory _reqID,
         string memory _dataOwner,
         string memory _proxy,
         string memory _reqValidtime,
         string memory _nonce
     ) 
-        public 
+        public onlyUnion
     {
         req[_reqID] = reqDetails({
             reqID: _reqID,
@@ -48,9 +68,27 @@ contract Proxy {
             reqValidtime: _reqValidtime,
             nonce: _nonce
         });
+        resOpen[_reqID] = true;
         emit reqEvent(_dataOwner, _reqID);
     }
-    
+
+    function proxyResponseEnd(
+        string memory _reqID
+    ) 
+        public resIsOpen(_reqID)
+    {
+        for (uint i=0; i < resRecord[_reqID].length; i++ ) {
+            if (resRecord[_reqID][i] == msg.sender) {
+                return;
+            }
+        }
+        resRecord[_reqID].push(msg.sender);
+        if (resRecord[_reqID].length == UNION_NUM || msg.sender == auditor) {
+            resOpen[_reqID] = false;
+            emit resEvent(req[_reqID].proxy, _reqID);
+        }
+    }
+
     function proxyResponse (
         string memory _shareID,
         string memory _reqID,
@@ -61,7 +99,7 @@ contract Proxy {
         string memory _nonce,
         string memory _ipfsHash
     ) 
-        public 
+        public onlyUnion resIsOpen(_reqID)
     {
         res[_shareID] = resDetails({
             shareID: _shareID,
@@ -73,7 +111,7 @@ contract Proxy {
             nonce: _nonce,
             ipfsHash: _ipfsHash
         });
-        emit resEvent(_dataOwner, _shareID);
+        resList[_reqID].push(_shareID);
     }
     
     function retrieveReq(string memory _reqID) public view returns (
@@ -94,6 +132,13 @@ contract Proxy {
         );
     }
     
+    function retreiveShareIDList(string memory _reqID) public view returns (
+        string[] memory shareIDList
+    )
+    {
+        return resList[_reqID];
+    }
+
     function retrieveRes(string memory _shareID) public view returns (
         string memory shareID,
         string memory reqID,

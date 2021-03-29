@@ -17,7 +17,7 @@ class IPFS {
             for await (const chunk of file.content) {
                 content.push(chunk)
             }
-            return content.toString()
+            return content.join('')
         }
     }
 

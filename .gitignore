@@ -1,3 +1,4 @@
+file/
 key/
 network/*/*
 !network/*/config
