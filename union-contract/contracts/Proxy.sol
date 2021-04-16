@@ -32,19 +32,19 @@ contract Proxy {
     uint constant UNION_NUM = 2;
     address public auditor;
     mapping (string => reqDetails) req; // reqID -> reqDetails
-    mapping (string => resDetails) res; // shareID -> resDetails
+    mapping (string => resDetails) res; // shareID+reqID -> resDetails
     mapping (string => string[]) resList; // reqID -> shareIDs
     mapping (string => address[]) resRecord; // reqID -> unions account address
     mapping (string => bool) resOpen; // reqID -> open response or not
     
 
     modifier onlyUnion {
-      require(msg.sender != auditor);
+      require(msg.sender != auditor, "only union can do this");
       _;
    }
 
    modifier resIsOpen(string memory _reqID) {
-       require(resOpen[_reqID] == true);
+       require(resOpen[_reqID] == true, "response is closed");
        _;
    }
    
@@ -101,7 +101,8 @@ contract Proxy {
     ) 
         public onlyUnion resIsOpen(_reqID)
     {
-        res[_shareID] = resDetails({
+        string memory resID = string(abi.encodePacked(_shareID, _reqID));
+        res[resID] = resDetails({
             shareID: _shareID,
             reqID: _reqID,
             dataOwner: _dataOwner,
@@ -139,7 +140,7 @@ contract Proxy {
         return resList[_reqID];
     }
 
-    function retrieveRes(string memory _shareID) public view returns (
+    function retrieveRes(string memory _resID) public view returns (
         string memory shareID,
         string memory reqID,
         string memory dataOwner,
@@ -149,7 +150,7 @@ contract Proxy {
         
     )
     {
-        resDetails memory tempRes = res[_shareID];
+        resDetails memory tempRes = res[_resID];
         return (
             tempRes.shareID,
             tempRes.reqID,
@@ -160,13 +161,13 @@ contract Proxy {
         );
     }
     
-    function retrieveData(string memory _shareID) public view returns (
+    function retrieveData(string memory _resID) public view returns (
         string memory shareID,
         string memory dataHash,
         string memory ipfsHash
     )
     {
-        resDetails memory tempRes = res[_shareID];
+        resDetails memory tempRes = res[_resID];
         return (
             tempRes.shareID,
             tempRes.dataHash,

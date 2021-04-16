@@ -1,9 +1,11 @@
 file/
+record/*.csv
 key/
 network/*/*
 !network/*/config
 !network/*/listOrg.sh
 !network/ipfs/ipfs.sh
+*.env
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,soliditytruffle,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,soliditytruffle,macos
