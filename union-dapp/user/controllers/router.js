@@ -3,13 +3,12 @@ const router = require('express').Router()
 const axios = require('axios')
 const config = require('../lib/config')
 const Crypto = require("../lib/crypto")
-const Timer = require("../lib/timer")
+const Tracker = require("../lib/tracker")
 const RequestWarrant = require("../models/req_warrant")
-const ShareWarrant = require('../../unionA/models/share_warrant')
+const ShareWarrant = require('../models/share_warrant')
 const crypto = new Crypto()
-const timer = new Timer()
-var t = 0
 
+// send request warrant by call api
 router.post('/request-warrant', (req, res) => {
     time = Date.now()
     const url = "http://" + config.IP + ":"+ config.PORT
@@ -17,12 +16,10 @@ router.post('/request-warrant', (req, res) => {
     const requestWarrant = new RequestWarrant()
     requestWarrant.userCreate(bankPK, unionPK)
     
-    // timer
-    t = Date.now()
-    timer.writeTime('./file/start.csv',requestWarrant.reqID, Date.now())
+    // record start time
+    Tracker.writeTime('./record/start.csv',requestWarrant.reqID, Date.now())
 
     console.log("Send request warrant to bank")
-    timeRecord = Date.now()
     axios.post(`${bankUrl}/request-warrant`, {requestWarrant, url})
     .then( response => {
         console.log(response.data);
@@ -34,9 +31,10 @@ router.post('/request-warrant', (req, res) => {
     })  
 })
 
+// send share warrant by call api
 router.post('/share-warrant', async(req, res) => {
     const {bankUrl, filename, bankPK, unionPK} = req.body
-    const rawData = fs.readFileSync(filename, 'hex')
+    const rawData = fs.readFileSync(`./file/${filename}`, 'hex')
     const encFile = crypto.aesEnc(rawData)
     const shareWarrant = new ShareWarrant()
     shareWarrant.userCreate(encFile, bankPK, unionPK)
@@ -61,32 +59,30 @@ router.post('/share-warrant', async(req, res) => {
     })  
 })
 
+// get response file 
 router.post('/response-file', (req, res) => {
     console.log("Get Response File")
     res.send("Get Response File Success!")
     const {reqID, encFiles} = req.body
-    encFiles.forEach(encFile => {
+    let n = 0
+    encFiles.forEach((encFile, index) => {
         kycFile = crypto.aesDec(encFile)
         if (kycFile.length < 10000){
             const buf = Buffer.from(kycFile, 'hex');
-            console.log(buf.toString())
+            console.log(`File${index+1}: ${buf.toString()}`)
         } else {
             const filename = `./file/${Date.now()}.pdf`
             fs.writeFile(filename, kycFile, 'hex', (err) =>{
                 if (err)
                     console.log(err)
                 else
-                    console.log(`Data save to ${filename}.`)
+                    console.log(`File${index+1}: Data save to ${filename}.`)
             })
         }
     });
 
-    // timer
-    console.log(`[INFO] Spend ${(Date.now() - t)/1000} seconds`)
-    timer.writeTime('./file/end.csv', reqID, Date.now())
+    // record end time
+    Tracker.writeTime('./record/end.csv', reqID, Date.now())
 })
-
-
-
 
 module.exports = router
