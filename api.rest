@@ -21,6 +21,19 @@ Content-Type: application/json
 }
 
 
+### share small file to bank3
+Post http://localhost:3001/share-warrant
+Content-Type: application/json
+
+{
+    "bankUrl": "http://localhost:4003",
+    "filename": "kycfile.txt",
+    "bankPK": "3056301006072a8648ce3d020106052b8104000a034200047fa85fd0b27c8cddd885eefa3064221ed56854681ba181642ed829a13ed9ee88da9ee428ba3befe2a8cc55d87b53c36648f1b0184ec6e6b94b48af85fd3ca92e",
+    "unionPK": "3056301006072a8648ce3d020106052b8104000a0342000401b98bdc13fcd1b97dece6cb20e0d58082e56347da96206bfb3209cc3ace107d0b8a63a31eea515acab17794d41328c1f0b3fc608b3ccd8799e569985e152501"
+}
+
+
+
 ### share big file to bank2
 Post http://localhost:3001/share-warrant
 Content-Type: application/json
