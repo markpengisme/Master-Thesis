@@ -2,9 +2,11 @@
 
 ## Todo
 
-- logger
-- 2*4, 3*4, 4*4, ...
-- 2*4, 6+2*3, 10+2*3, ...
+- Scale experiment
+    - 2*4, 3*4, 4*4, ...
+    - v.s
+    - 2*4, 6+2*3, 10+2*3, ...
+- auditor features
 
 ## 變數名稱
 
@@ -33,12 +35,14 @@
 - bankPK
 - unionPK
 
-## 單位/port
+## 單位
 
+- XXXX(http server port / quorum websockets port / ipfs api port)
 - user:3001
 - bank1:4001
 - bank2:4002
-- audior:5000/23000/6000/7000/8000
-- unionA: 5001/23001/6001/7001/8001
-- unionB: 5002/23002/6002/7002/8002
+- bank3:4003
+- audior:5000/23000/7000
+- unionA: 5001/23001/7001
+- unionB: 5002/23002/7002
 

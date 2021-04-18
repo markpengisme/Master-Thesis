@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "test": "jest --verbose",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "bank_x1": "BANKNUM=1 nodemon index.js",
+    "bank_x2": "BANKNUM=2 nodemon index.js"
   },
   "author": "",
   "license": "ISC",

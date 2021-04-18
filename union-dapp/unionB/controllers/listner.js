@@ -4,6 +4,7 @@ const Contract = require('../lib/contract');
 const Crypto = require("../lib/crypto")
 const IPFS = require("../lib/ipfs")
 const Tracker = require("../lib/tracker")
+const Logger = require('../lib/logger')
 const RequestWarrant = require("../models/req_warrant")
 const ShareWarrant = require("../models/share_warrant")
 const {UserReq, UserShare} = require("../models/user")
@@ -17,38 +18,34 @@ contract.startListenReq = function() {
     // broadcast request
     this.contract.events.reqEvent()
     .on('data', async (result) => {
-        console.log("Get Proxy Request from blockchain.")
         const reqID = result.returnValues.reqID
-        if (reqID == "test") { return }// test
         const req = await contract.retrieveReq(reqID)
         const requestWarrant = new RequestWarrant(req.dataOwner,
-                                            "",
-                                            req.proxy,
-                                            req.reqValidtime,
-                                            req.nonce,
-                                            req.reqID,
-                                            "")
+                                                "",
+                                                req.proxy,
+                                                req.reqValidtime,
+                                                req.nonce,
+                                                req.reqID,
+                                                "")
 
         const v1 = requestWarrant.checkID()
-        console.log("Check reqID:", v1)
+        Logger.log(`Get Proxy Request from blockchain
+                    (${reqID.substr(0,40)}...),
+                    Check reqID: ${v1}`)
         
         
         Bank.map(bank => {
-            console.log(`Send request file to ${bank.name}.`)
+            Logger.log(`Send request file to ${bank.name}(${reqID.substr(0,40)}...).`)
             const sendTime = Date.now()
             const unionSign = crypto.eccSign(requestWarrant.reqID + sendTime)
             axios.post(`${bank.url}/request-file`,{requestWarrant, sendTime, unionSign})
-            .then( response => {
-                console.log(response.data)
-            })
-            .catch( error => {
-                console.log(error);
-            })
-        });
+            .then(response => Logger.log(response.data))
+            .catch(error => Logger.error(error.toString()))
+        })
        
     })
     .on('error', (error) => {
-        console.log(error)
+        Logger.error(error.toString())
     })
 }
 
@@ -63,7 +60,7 @@ contract.startListenRes = function() {
         const bank = Bank.find(bank => bank.pk === userReq.pk)
 
 
-        console.log("Get Proxy Response from blockchain.")
+        Logger.log(`Get Proxy Response from blockchain.(${reqID.substr(0,40)}...)`)
         const shareIDList = await contract.retreiveShareIDList(reqID)
         const files = []
         for (shareID of shareIDList) {
@@ -80,20 +77,22 @@ contract.startListenRes = function() {
             const v1 = shareWarrant.checkID()
             const encFile = await ipfs.get(data.ipfsHash)     
             const v2 = crypto.hash(encFile) === shareWarrant.dataHash
+            
 
-            console.log("Check shareID:", v1)
-            console.log("Check data hash:", v2)
+            Logger.log(`[File${files.length+1}]
+                        Check shareID:${v1},
+                        Check data hash: ${v2}`)
             files.push({shareWarrant, encFile})
         }
 
-        console.log("==============files:", files.length,"==============") // test
+        Logger.log(`Total files: ${files.length}(${reqID.substr(0,40)}...)`)
         if (files.length !== 0 ) {
             Tracker.remove(reqID)
             const sendTime = Date.now()
             const text = JSON.stringify(files) + reqID + sendTime
             const unionSign = crypto.eccSign(text)
     
-            console.log(`Send all response file to ${bank.name}.`)
+            Logger.log(`Send all response file to ${bank.name}.`)
             axios({
                 method: 'post',
                 url: `${bank.url}/response-file`,
@@ -102,25 +101,17 @@ contract.startListenRes = function() {
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
                 data: {reqID, files, sendTime, unionSign}
             })
-            .then( response => {
-                console.log(response.data)
-            })
-            .catch( error => {
-                console.error(error);
-            })
+            .then(response => Logger.log(response.data))
+            .catch(error => Logger.error(error.toString()))
         } else {
             console.log(`Send no file to ${bank.name}.`)  
             axios.post(`${bank.url}/response-file`, {reqID})
-            .then( response => {
-                console.log(response.data)
-            })
-            .catch( error => {
-                console.error(error);
-            })
+            .then(response => Logger.log(response.data))
+            .catch(error => Logger.error(error.toString()))
         }
     }) 
     .on('error', (error) => {
-        console.log(error)
+        Logger.error(error.toString())
     })
 }
 

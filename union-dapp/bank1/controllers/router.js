@@ -4,6 +4,7 @@ const axios = require('axios')
 const config = require('../lib/config')
 const Crypto = require("../lib/crypto")
 const Tracker = require("../lib/tracker")
+const Logger = require('../lib/logger')
 const RequestWarrant = require("../models/req_warrant")
 const ShareWarrant = require("../models/share_warrant")
 const {UserReq, UserShare} = require("../models/user")
@@ -11,10 +12,7 @@ const crypto = new Crypto()
 
 // get request warrant from user
 router.post('/request-warrant', async (req, res) => {
-    console.log("Get request warrant from user.")
-    res.send("Success.")
-    let {requestWarrant, url} = req.body
-    
+    let {requestWarrant, url} = req.body 
     requestWarrant = new RequestWarrant(requestWarrant.dataOwner,
                                         requestWarrant.authorized,
                                         requestWarrant.proxy,
@@ -22,9 +20,13 @@ router.post('/request-warrant', async (req, res) => {
                                         requestWarrant.nonce,
                                         requestWarrant.reqID,
                                         requestWarrant.userSign)
-
     const v1 = requestWarrant.checkWarrant()
-    console.log("Check warrant:", v1)
+    const reqID = requestWarrant.reqID
+    Logger.log(`Get request warrant from user
+                (${reqID.substr(0,40)}...),
+                Check warrant: ${v1}`)
+    res.send(`Success(${reqID.substr(0,40)}...).`)
+
     const userReq = new UserReq({
       pk: requestWarrant.dataOwner,
       url: url,
@@ -32,25 +34,19 @@ router.post('/request-warrant', async (req, res) => {
     })
   
     await userReq.save()
-    .then(savedUserReq => console.log("User request warant data save success."))
-    .catch(error => console.log(error))
+    .then(savedUserReq => Logger.log(`User request warrant data save success.(${reqID.substr(0,40)}...)`))
+    .catch(error => Logger.error(error.toString()))
 
     const sendTime = Date.now()
     const bankSign = crypto.eccSign(requestWarrant.userSign + sendTime)
     
     axios.post(`${config.unionUrl}/request-warrant`,{requestWarrant, sendTime, bankSign})
-    .then( response => {
-        console.log(response.data);
-    })
-    .catch( error => {
-        console.log(error);
-    })
+    .then(response => Logger.log(response.data))
+    .catch(error => Logger.error(error.toString()))
 })
 
 // get share warrant from user
 router.post('/share-warrant', async (req, res) => {
-    console.log("Get share warrant from user.")
-    res.send("Success.")
     let {shareWarrant, encFile} = req.body
     shareWarrant = new ShareWarrant(shareWarrant.dataOwner,
                                     shareWarrant.dataHash,
@@ -62,8 +58,12 @@ router.post('/share-warrant', async (req, res) => {
                                     shareWarrant.userSign)
     const v1 = shareWarrant.checkWarrant()
     const v2 = crypto.hash(encFile) === shareWarrant.dataHash
-    console.log("Check warrant:", v1)
-    console.log("Check data hash:", v2)
+    const shareID = shareWarrant.shareID
+    Logger.log(`Get share warrant from user
+                (${shareID.substr(0,40)}...),
+                Check warrant: ${v1},
+                Check data hash: ${v2}`)
+    res.send(`Success(${shareID.substr(0,40)}...).`)
 
 
     const userShare = new UserShare({
@@ -73,23 +73,19 @@ router.post('/share-warrant', async (req, res) => {
     
     await userShare.save()
     .then(savedUserShare => {
-        console.log("User share warant data save success")
+        Logger.log(`User share warrant data save success(${shareID.substr(0,40)}...)`)
         const filename = `./file/${shareWarrant.dataHash}`
         fs.writeFileSync(filename, encFile, 'hex')
     })
-    .catch(error => console.log(error))
+    .catch(error => Logger.error(error.toString()))
       
 })
 
 // get file request from union
 router.post('/request-file', async (req, res) => {
-    console.log("Get file request from union.")
-    res.send("Success.")
-
     let {requestWarrant, sendTime, unionSign} = req.body
     const text = requestWarrant.reqID + sendTime
     const v1 = crypto.eccVerify(text, unionSign, config.unionPK)
-
     requestWarrant = new RequestWarrant(requestWarrant.dataOwner,
                                         "",
                                         requestWarrant.proxy,
@@ -98,14 +94,16 @@ router.post('/request-file', async (req, res) => {
                                         requestWarrant.reqID,
                                         "")
     const v2 = requestWarrant.checkID()
-    console.log("Check signature:", v1)
-    console.log("Check reqID:", v2)
+    const reqID = requestWarrant.reqID
+
+    Logger.log(`Get file request from union(${reqID.substr(0,40)}),
+                Check signature: ${v1},
+                Check reqID: ${v2}`)
+    res.send(`Success(${reqID.substr(0,40)}...).`)
   
     // share file
-    const reqID = requestWarrant.reqID
     let userShare = await UserShare.findOne({pk: requestWarrant.dataOwner}).sort({ "shareWarrant.shareValidtime": 'desc'})
-    console.log("Send response file to union.")
-
+    
     if (userShare !== null ){
       userShare = userShare.toJSON()
       const shareWarrant = userShare.shareWarrant
@@ -113,7 +111,8 @@ router.post('/request-file', async (req, res) => {
       const encFile = fs.readFileSync(filename, 'hex')
       sendTime = Date.now()
       const bankSign = crypto.eccSign(shareWarrant.userSign + sendTime)
-      
+      Logger.log(`Send response file to union(${reqID.substr(0,40)}).`)
+
       axios({
         method: 'post',
         url: `${config.unionUrl}/response-file`,
@@ -122,37 +121,29 @@ router.post('/request-file', async (req, res) => {
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         data: {reqID, shareWarrant, sendTime, bankSign, encFile}
       })
-      .then( response => {
-          console.log(response.data);
-      })
-      .catch( error => {
-          console.log(error);
-      })
+      .then(response => Logger.log(response.data))
+      .catch(error => Logger.error(error.toString()))
+
     } else {
+        Logger.log(`Send empty response to union(${reqID.substr(0,40)}).`)
         axios.post(`${config.unionUrl}/response-file`,{reqID})
-        .then( response => {
-            console.log(response.data);
-        })
-        .catch( error => {
-            console.log(error);
-        })
+        .then(response => Logger.log(response.data))
+        .catch(error => Logger.error(error.toString()))
     }
   
 })
 
 // get response files from union
 router.post('/response-file', async (req, res) => {
-    console.log("Get response file from union.")
-    res.send("Success.")
-
     const {reqID, files, sendTime, unionSign} = req.body
     const text = JSON.stringify(files) + reqID + sendTime
     const v1 = crypto.eccVerify(text, unionSign, config.unionPK)
-    console.log("Check signature:", v1)
+    Logger.log(`Get response file from union(${reqID.substr(0,40)}...),
+                Check signature: ${v1})`)
+    res.send(`Success(${reqID.substr(0,40)}...))`)
 
     let encFiles = []
-    for (file of files) {
-        
+    files.forEach((file, index) => {
       let {shareWarrant, encFile} = file
       shareWarrant = new ShareWarrant(shareWarrant.dataOwner,
                                       shareWarrant.dataHash,
@@ -164,10 +155,11 @@ router.post('/response-file', async (req, res) => {
                                       "")
       const v2 = shareWarrant.checkID()
       const v3 = crypto.hash(encFile) === shareWarrant.dataHash
-      console.log("Check shareID:", v2)
-      console.log("Check data hash:", v3)
+      Logger.log(`[File${index+1}]
+                  Check shareID:${v2},
+                  Check data hash:${v3}`)
       encFiles.push(encFile)
-    }
+    })
 
     let userReq = await UserReq.findOne({"requestWarrant.reqID": reqID})
         
@@ -180,12 +172,8 @@ router.post('/response-file', async (req, res) => {
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         data: {reqID, encFiles}
     })
-    .then( response => {
-        console.log(response.data);     
-    })
-    .catch( error => {
-        console.log(error);
-    })
+    .then(response => Logger.log(response.data))
+    .catch(error => Logger.error(error.toString()))
 })
 
 

@@ -4,42 +4,43 @@ const axios = require('axios')
 const config = require('../lib/config')
 const Crypto = require("../lib/crypto")
 const Tracker = require("../lib/tracker")
+const Logger = require('../lib/logger')
 const RequestWarrant = require("../models/req_warrant")
 const ShareWarrant = require('../models/share_warrant')
 const crypto = new Crypto()
 
 // send request warrant by call api
-router.post('/request-warrant', (req, res) => {
+router.post('/request-warrant', (req, res, next) => {
     time = Date.now()
     const url = "http://" + config.IP + ":"+ config.PORT
-    const {bankUrl, bankPK, unionPK} = req.body
+    const {bankName, bankPK, bankUrl, unionPK} = req.body
     const requestWarrant = new RequestWarrant()
     requestWarrant.userCreate(bankPK, unionPK)
     
     // record start time
     Tracker.writeTime('./record/start.csv',requestWarrant.reqID, Date.now())
 
-    console.log("Send request warrant to bank")
+    Logger.log(`Send request warrant to ${bankName}(${requestWarrant.reqID.substr(0,40)}...)`)
     axios.post(`${bankUrl}/request-warrant`, {requestWarrant, url})
-    .then( response => {
-        console.log(response.data);
-        res.send("Send Request Warrant Success!\n")
+    .then(response => {
+        Logger.log(response.data);
+        res.send("Send Request Warrant Success!")
     })
-    .catch( error => {
-        console.log(error);
-        res.send("Send Request Warrant Fail!\n")
+    .catch(error => {
+        Logger.error(error.toString());
+        res.send("Send Request Warrant Fail!")
     })  
 })
 
 // send share warrant by call api
 router.post('/share-warrant', async(req, res) => {
-    const {bankUrl, filename, bankPK, unionPK} = req.body
+    const {bankName, bankPK, bankUrl, unionPK, filename} = req.body
     const rawData = fs.readFileSync(`./file/${filename}`, 'hex')
     const encFile = crypto.aesEnc(rawData)
     const shareWarrant = new ShareWarrant()
     shareWarrant.userCreate(encFile, bankPK, unionPK)
 
-    console.log("Send Share Warrant")
+    Logger.log(`Send share warrant to ${bankName}(${shareWarrant.reqID.substr(0,40)}...)`)
     
     axios({
         method: 'post',
@@ -50,36 +51,37 @@ router.post('/share-warrant', async(req, res) => {
         data: {shareWarrant, encFile}
     })
     .then( response => {
-        console.log(response.data);
-        res.send("Send Share Warrant Success!\n")
+        Logger.log(response.data);
+        res.send("Send Share Warrant Success!")
     })
     .catch( error => {
-        console.log(error);
-        res.send("Send Request Warrant Fail!\n")
+        Logger.error(error.toString());
+        res.send("Send Request Warrant Fail!")
     })  
 })
 
 // get response file 
 router.post('/response-file', (req, res) => {
-    console.log("Get Response File")
-    res.send("Get Response File Success!")
     const {reqID, encFiles} = req.body
+    Logger.log(`Get Response Files(${reqID.substr(0,40)}...)`)
+    res.send("User Get Response File Success!")
+
     let n = 0
     encFiles.forEach((encFile, index) => {
         kycFile = crypto.aesDec(encFile)
         if (kycFile.length < 10000){
             const buf = Buffer.from(kycFile, 'hex');
-            console.log(`File${index+1}: ${buf.toString()}`)
+            Logger.log(`File${index+1}: ${buf.toString()}`)
         } else {
             const filename = `./file/${Date.now()}.pdf`
             fs.writeFile(filename, kycFile, 'hex', (err) =>{
                 if (err)
-                    console.log(err)
+                    Logger.error(error.toString());
                 else
-                    console.log(`File${index+1}: Data save to ${filename}.`)
+                    Logger.log(`File${index+1}: Data save to ${filename}.`)
             })
         }
-    });
+    })
 
     // record end time
     Tracker.writeTime('./record/end.csv', reqID, Date.now())
