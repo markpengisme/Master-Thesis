@@ -1,7 +1,7 @@
 #!/bin/bash
 
+cd 5-nodes-istanbul-bash
 num=$(ls qdata/dd*/keystore/key | wc -l | awk '$1=$1')
-
 for n in $(seq 1 $num)
 do
     ip=$(cat config.json | \
