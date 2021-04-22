@@ -1,5 +1,10 @@
 const config = require('../lib/config')
+const Logger = require('../lib/logger')
 const mongoose = require('mongoose')
+const conn = mongoose.createConnection(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
+conn.on("connected", function(){
+  Logger.log('connected to MongoDB')
+})
 
 const requestWarrantSchema = new mongoose.Schema({
   dataOwner: String,
@@ -49,7 +54,7 @@ userShareSchema.set('toJSON', {
   }
 })
 
-const UserReq = mongoose.model(`${config.NAME}_User_Request_Warrant`, userReqSchema)
-const UserShare = mongoose.model(`${config.NAME}_User_Share_Warrant`, userShareSchema)
+const UserReq = conn.model(`${config.NAME}_User_Request_Warrant`, userReqSchema)
+const UserShare = conn.model(`${config.NAME}_User_Share_Warrant`, userShareSchema)
 
 module.exports = {UserReq, UserShare}

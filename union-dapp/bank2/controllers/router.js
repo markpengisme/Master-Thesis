@@ -25,7 +25,7 @@ router.post('/request-warrant', async (req, res) => {
     Logger.log(`Get request warrant from user
                 (${reqID.substr(0,40)}...),
                 Check warrant: ${v1}`)
-    res.send(`Success(${reqID.substr(0,40)}...).`)
+    res.send(`Success from ${config.NAME}(${reqID.substr(0,40)}...).`)
 
     const userReq = new UserReq({
       pk: requestWarrant.dataOwner,
@@ -63,7 +63,7 @@ router.post('/share-warrant', async (req, res) => {
                 (${shareID.substr(0,40)}...),
                 Check warrant: ${v1},
                 Check data hash: ${v2}`)
-    res.send(`Success(${shareID.substr(0,40)}...).`)
+    res.send(`Success from ${config.NAME}(${shareID.substr(0,40)}...).`)
 
 
     const userShare = new UserShare({
@@ -99,7 +99,7 @@ router.post('/request-file', async (req, res) => {
     Logger.log(`Get file request from union(${reqID.substr(0,40)}),
                 Check signature: ${v1},
                 Check reqID: ${v2}`)
-    res.send(`Success(${reqID.substr(0,40)}...).`)
+    res.send(`Success from ${config.NAME}(${reqID.substr(0,40)}...).`)
   
     // share file
     let userShare = await UserShare.findOne({pk: requestWarrant.dataOwner}).sort({ "shareWarrant.shareValidtime": 'desc'})
@@ -140,7 +140,7 @@ router.post('/response-file', async (req, res) => {
     const v1 = crypto.eccVerify(text, unionSign, config.unionPK)
     Logger.log(`Get response file from union(${reqID.substr(0,40)}...),
                 Check signature: ${v1})`)
-    res.send(`Success(${reqID.substr(0,40)}...))`)
+    res.send(`Success from ${config.NAME}(${reqID.substr(0,40)}...))`)
 
     let encFiles = []
     files.forEach((file, index) => {
