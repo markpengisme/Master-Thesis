@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ## user send share warrant to 40 banks
-for ((i=1; i<81; i++));
+for ((i=1; i<71; i++));
 do
     cd bank$i
     bankName=$(cat .env | grep NAME | cut -d '"' -f 2)

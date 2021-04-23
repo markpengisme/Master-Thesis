@@ -3,6 +3,7 @@ const fs = require('fs')
 class Tracker {
     static TX = new Map()
     static Counter = {}
+    static task = []
 
     static writeTime(filename, reqID, time) {
         const text = reqID + ","+ time + "\n"
@@ -25,6 +26,13 @@ class Tracker {
         }
     }
     
+    static proxyEnqueue(proxyRes) {
+        this.task.push(proxyRes)
+    }
+
+    static proxyDequeue() {
+        return this.task.shift()
+    }
     
 }
 

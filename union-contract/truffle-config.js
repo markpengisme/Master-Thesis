@@ -41,6 +41,14 @@ module.exports = {
       gasPrice: 0,
       gas: 4500000,
       type: "quorum" // needed for Truffle to support Quorum
+    },
+    node5:  {
+      host: "127.0.0.1",
+      port: 22004,
+      network_id: "*", // Match any network id
+      gasPrice: 0,
+      gas: 4500000,
+      type: "quorum" // needed for Truffle to support Quorum
     }
   }
 };

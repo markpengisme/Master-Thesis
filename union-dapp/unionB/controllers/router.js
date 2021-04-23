@@ -1,7 +1,7 @@
 const fs = require('fs')
 const router = require('express').Router()
 const config = require('../lib/config')
-const Contract = require('../lib/contract');
+const Contract = require('../lib/contract')
 const Crypto = require("../lib/crypto")
 const IPFS = require("../lib/ipfs")
 const Tracker = require("../lib/tracker")
@@ -21,7 +21,6 @@ router.post('/request-warrant', async (req, res) => {
         let {requestWarrant, sendTime, bankSign} = req.body
         const text = requestWarrant.userSign + sendTime
         const v1 = crypto.eccVerify(text, bankSign, requestWarrant.authorized)
-
         requestWarrant = new RequestWarrant(requestWarrant.dataOwner,
             requestWarrant.authorized,
             requestWarrant.proxy,
@@ -37,7 +36,7 @@ router.post('/request-warrant', async (req, res) => {
                     (${requestWarrant.reqID.substr(0,40)}...),
                     Check signature: ${v1},
                     Check warrant: ${v2}`)
-        res.send(`Success(${requestWarrant.reqID.substr(0,40)}...).`)
+        res.send(`Success from ${config.NAME}(${requestWarrant.reqID.substr(0,40)}...).`)
         const userReq = new UserReq({
             pk: requestWarrant.authorized,
             url: url,
@@ -56,13 +55,7 @@ router.post('/request-warrant', async (req, res) => {
                                     requestWarrant.reqValidtime,
                                     requestWarrant.nonce)
     } catch(error) {
-        if (!requestWarrant.reqID){
-            reqID = requestWarrant.reqID
-        } else {
-            reqID = "???"
-        }
         Logger.error(error.toString())
-        res.send(`Fail(${reqID.substr(0,40)}...).`)
     }
 })
 
@@ -89,7 +82,7 @@ router.post('/response-file', async (req, res) => {
                         Check signature: ${v1}
                         Check warrant: ${v2}
                         Check data hash: ${v3}`)
-            res.send(`Success(${reqID.substr(0,49)}...)`)
+            res.send(`Success from ${config.NAME}(${reqID.substr(0,40)}...)`)
 
             const userShare = new UserShare({
                 pk: shareWarrant.authorized,
@@ -106,30 +99,44 @@ router.post('/response-file', async (req, res) => {
 
             const ipfsResult = await ipfs.add(encFile)
 
-            await contract.proxyResponse(shareWarrant.shareID,
-                                        reqID,
-                                        shareWarrant.dataOwner,
-                                        shareWarrant.dataHash,
-                                        shareWarrant.proxy,
-                                        shareWarrant.shareValidtime,
-                                        shareWarrant.nonce,
-                                        ipfsResult.path)
-
-           
-            Logger.log(`Proxy Response File Success
-                    (${reqID.substr(0,40)}... ->
-                    ${shareWarrant.shareID.substr(0,40)})`)
-        }
-
-        // get all banks response
-        Tracker.increament(reqID)
-        if (Tracker.Counter[reqID] == Bank.length) {
-            await contract.proxyResponseEnd(reqID)
-            Logger.log(`Proxy Response End!(${reqID.substr(0,40)}...)`)
+            // add proxy request in queue
+            Tracker.proxyEnqueue([  shareWarrant.shareID,
+                                    reqID,
+                                    shareWarrant.dataOwner,
+                                    shareWarrant.dataHash,
+                                    shareWarrant.proxy,
+                                    shareWarrant.shareValidtime,
+                                    shareWarrant.nonce,
+                                    ipfsResult.path])
         }
     } catch (error) {
         Logger.error(error.toString())
     }    
 })
+
+// Do proxy request in sync, avoid nonce repeat problem
+const loop = async () => {
+    while(1) {
+        if (Tracker.task.length !== 0){
+            const proxyRes = Tracker.proxyDequeue()
+            const shareID = proxyRes[0]
+            const reqID = proxyRes[1]
+            await contract.proxyResponse(...proxyRes)
+            Logger.log(`Proxy Response File Success
+                        (${reqID.substr(0,40)}... ->
+                            ${shareID.substr(0,40)})`)
+        
+            Tracker.increament(reqID)
+            if (Tracker.Counter[reqID] == Bank.length) {
+                await contract.proxyResponseEnd(reqID)
+                Logger.log(`Proxy Response End!(${reqID.substr(0,40)}...)`)
+            }
+        } else {
+            await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+    } 
+}
+loop()
+
 
 module.exports = router

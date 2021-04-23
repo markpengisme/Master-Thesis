@@ -6,6 +6,7 @@ console.log("Number of banks be serviced:", bankNum)
 const bank = JSON.parse(bankData).bank.slice(0, bankNum)
 
 const config = {
+    NAME: process.env.NAME,
     PORT: process.env.PORT || 3000,
     MONGODB_URI: process.env.MONGODB_URI,
     ADDRESS: process.env.ADDRESS,

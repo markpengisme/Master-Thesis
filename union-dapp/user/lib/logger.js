@@ -8,7 +8,7 @@ class Logger{
   static error(...params){
     const time = new Date().toTimeString().substr(0,8)
     const s = `[ERROR][${time}]` + params.join(' ')
-    console.error(s)
+    console.log(s)
   }
 }
 

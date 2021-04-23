@@ -24,23 +24,28 @@ router.post('/request-warrant', (req, res, next) => {
     axios.post(`${bankUrl}/request-warrant`, {requestWarrant, url})
     .then(response => {
         Logger.log(response.data);
-        res.send("Send Request Warrant Success!")
+        res.send("Send Request Warrant Success\n")
     })
     .catch(error => {
         Logger.error(error.toString());
-        res.send("Send Request Warrant Fail!")
+        res.send("Send Request Warrant Fail!\n")
     })  
 })
 
 // send share warrant by call api
 router.post('/share-warrant', async(req, res) => {
-    const {bankName, bankPK, bankUrl, unionPK, filename} = req.body
-    const rawData = fs.readFileSync(`./file/${filename}`, 'hex')
-    const encFile = crypto.aesEnc(rawData)
+    const {bankName, bankPK, bankUrl, unionPK, filename, rawData} = req.body
+    let data = ""
+    if (filename) {
+        data = fs.readFileSync(`./file/${filename}`, 'hex')
+    } else {
+        const buf = Buffer.from(rawData, 'utf-8')
+        data = buf.toString('hex')
+    }
+    const encFile = crypto.aesEnc(data)
     const shareWarrant = new ShareWarrant()
     shareWarrant.userCreate(encFile, bankPK, unionPK)
-
-    Logger.log(`Send share warrant to ${bankName}(${shareWarrant.reqID.substr(0,40)}...)`)
+    Logger.log(`Send share warrant to ${bankName}(${shareWarrant.shareID.substr(0,40)}...)`)
     
     axios({
         method: 'post',
@@ -52,11 +57,11 @@ router.post('/share-warrant', async(req, res) => {
     })
     .then( response => {
         Logger.log(response.data);
-        res.send("Send Share Warrant Success!")
+        res.send("Send Share Warrant Success!\n")
     })
     .catch( error => {
         Logger.error(error.toString());
-        res.send("Send Request Warrant Fail!")
+        res.send("Send Request Warrant Fail!\n")
     })  
 })
 

@@ -1,6 +1,6 @@
 const axios = require('axios')
 const config = require('../lib/config')
-const Contract = require('../lib/contract');
+const Contract = require('../lib/contract')
 const Crypto = require("../lib/crypto")
 const IPFS = require("../lib/ipfs")
 const Tracker = require("../lib/tracker")
