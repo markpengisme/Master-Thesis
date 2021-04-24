@@ -15,22 +15,22 @@ else
     npm run dev >> .log &
     ## union server
     if [ -z "$1" ]; then
-        ua=2
+        ua=1
     else
         ua=$1
     fi
     if [ -z "$2" ]; then
-        ub=2
+        ub=1
     else
         ub=$2
     fi
     if [ -z "$3" ]; then
-        uc=2
+        uc=1
     else
         uc=$3
     fi
     if [ -z "$4" ]; then
-        ud=2
+        ud=1
     else
         ud=$4
     fi
@@ -44,31 +44,31 @@ else
     BANKNUM=$ud npm run dev >> .log &
     
     cd ../
-    ua=$(($ua+1))
-    ub=$(($ub+11))
-    uc=$(($uc+21))
-    ud=$(($ud+31))
+    ua=$(($ua+100))
+    ub=$(($ub+200))
+    uc=$(($uc+300))
+    ud=$(($ud+400))
 
     ## bank server
-    for ((i=1; i<$ua; i++));
+    for ((i=100; i<$ua; i++));
     do
         cd bank$i
         npm run dev >> .log &
         cd ..
     done
-    for ((i=11; i<$ub; i++));
+    for ((i=200; i<$ub; i++));
     do
         cd bank$i
         npm run dev >> .log &
         cd ..
     done
-    for ((i=21; i<$uc; i++));
+    for ((i=300; i<$uc; i++));
     do
         cd bank$i
         npm run dev >> .log &
         cd ..
     done
-    for ((i=31; i<$ud; i++));
+    for ((i=400; i<$ud; i++));
     do
         cd bank$i
         npm run dev >> .log &

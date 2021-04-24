@@ -33,19 +33,22 @@ contract.startListenReq = function() {
                     (${reqID.substr(0,40)}...),
                     Check reqID: ${v1}`)
         
-        
         Bank.map(bank => {
             Logger.log(`Send request file to ${bank.name}(${reqID.substr(0,40)}...).`)
             const sendTime = Date.now()
             const unionSign = crypto.eccSign(requestWarrant.reqID + sendTime)
             axios.post(`${bank.url}/request-file`,{requestWarrant, sendTime, unionSign})
             .then(response => Logger.log(response.data))
-            .catch(error => Logger.error(error.toString()))
+            .catch(error => Logger.error(error.stack))
         })
-       
+        
+        if (Bank.length === 0) {
+            await contract.proxyResponseEnd(reqID)
+            Logger.log(`Proxy Response End!(${reqID.substr(0,40)}...)`)
+        }
     })
     .on('error', (error) => {
-        Logger.error(error.toString())
+        Logger.error(error.stack)
     })
 }
 
@@ -102,16 +105,16 @@ contract.startListenRes = function() {
                 data: {reqID, files, sendTime, unionSign}
             })
             .then(response => Logger.log(response.data))
-            .catch(error => Logger.error(error.toString()))
+            .catch(error => Logger.error(error.stack))
         } else {
             console.log(`Send no file to ${bank.name}.`)  
             axios.post(`${bank.url}/response-file`, {reqID})
             .then(response => Logger.log(response.data))
-            .catch(error => Logger.error(error.toString()))
+            .catch(error => Logger.error(error.stack))
         }
     }) 
     .on('error', (error) => {
-        Logger.error(error.toString())
+        Logger.error(error.stack)
     })
 }
 

@@ -1,9 +1,10 @@
+const { timeStamp } = require('console')
 const fs = require('fs')
 
 class Tracker {
     static TX = new Map()
-    static Counter = {}
-    static task = []
+    static resCounter = {}
+    static resDatas = {}
 
     static writeTime(filename, reqID, time) {
         const text = reqID + ","+ time + "\n"
@@ -18,22 +19,21 @@ class Tracker {
         this.TX.delete(reqID)
     }
 
-    static increament(reqID) {
-        if (this.Counter[reqID] === undefined) {
-            this.Counter[reqID] = 1
+    static increamentCounter(reqID) {
+        if (this.resCounter[reqID] === undefined) {
+            this.resCounter[reqID] = 1
         } else {
-            this.Counter[reqID] += 1
+            this.resCounter[reqID] += 1
         }
+        return this.resCounter[reqID]
     }
-    
-    static proxyEnqueue(proxyRes) {
-        this.task.push(proxyRes)
-    }
-
-    static proxyDequeue() {
-        return this.task.shift()
-    }
-    
+    static addResDatas(reqID, resData) {
+        if (this.resDatas[reqID] === undefined) {
+            this.resDatas[reqID] = [resData]
+        } else {
+            this.resDatas[reqID].push(resData)
+        }
+    } 
 }
 
 module.exports = Tracker

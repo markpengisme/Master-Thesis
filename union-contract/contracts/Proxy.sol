@@ -29,27 +29,30 @@ contract Proxy {
         string ipfsHash;
     }
 
-    uint constant UNION_NUM = 2;
+    uint constant UNION_NUM = 4;
     address public auditor;
     mapping (string => reqDetails) req; // reqID -> reqDetails
     mapping (string => resDetails) res; // shareID+reqID -> resDetails
     mapping (string => string[]) resList; // reqID -> shareIDs
-    mapping (string => address[]) resRecord; // reqID -> unions account address
-    mapping (string => bool) resOpen; // reqID -> open response or not
+    mapping (string => bool) resRecord; // reqID+msg.sender -> union response end record
+    mapping (string => uint) resCount; // reqID -> no. unions response
     
 
     modifier onlyUnion {
       require(msg.sender != auditor, "only union can do this");
       _;
    }
-
-   modifier resIsOpen(string memory _reqID) {
-       require(resOpen[_reqID] == true, "response is closed");
-       _;
-   }
    
     constructor () public {
         auditor = msg.sender;
+    }
+
+    function compareStrings(
+        string memory a,
+         string memory b
+    ) public view returns (bool) 
+    {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))));
     }
 
     function proxyRequest(
@@ -68,25 +71,7 @@ contract Proxy {
             reqValidtime: _reqValidtime,
             nonce: _nonce
         });
-        resOpen[_reqID] = true;
         emit reqEvent(_dataOwner, _reqID);
-    }
-
-    function proxyResponseEnd(
-        string memory _reqID
-    ) 
-        public resIsOpen(_reqID)
-    {
-        for (uint i=0; i < resRecord[_reqID].length; i++ ) {
-            if (resRecord[_reqID][i] == msg.sender) {
-                return;
-            }
-        }
-        resRecord[_reqID].push(msg.sender);
-        if (resRecord[_reqID].length == UNION_NUM || msg.sender == auditor) {
-            resOpen[_reqID] = false;
-            emit resEvent(req[_reqID].proxy, _reqID);
-        }
     }
 
     function proxyResponse (
@@ -99,7 +84,7 @@ contract Proxy {
         string memory _nonce,
         string memory _ipfsHash
     ) 
-        public onlyUnion resIsOpen(_reqID)
+        public onlyUnion
     {
         string memory resID = string(abi.encodePacked(_shareID, _reqID));
         res[resID] = resDetails({
@@ -113,6 +98,40 @@ contract Proxy {
             ipfsHash: _ipfsHash
         });
         resList[_reqID].push(_shareID);
+    }
+
+    function proxyResponseEnd(
+        string memory _reqID
+    ) 
+        public onlyUnion
+    {
+        string memory record = string(abi.encodePacked(_reqID, msg.sender));
+        require(resRecord[record] != true, "can not response again");
+
+        resCount[_reqID] += 1;
+        resRecord[record] = true;
+        if (resCount[_reqID] == UNION_NUM) {
+            emit resEvent(req[_reqID].proxy, _reqID);
+        }
+    }
+
+    function proxyResponses (
+        string memory reqID,
+        string[8][] memory resDatas
+    ) 
+        public onlyUnion
+    {
+        for (uint i=0; i< resDatas.length; i++) {
+            require(this.compareStrings(reqID,resDatas[i][1]), "reqID not same");
+            this.proxyResponse( resDatas[i][0],
+                                resDatas[i][1],
+                                resDatas[i][2],
+                                resDatas[i][3],
+                                resDatas[i][4],
+                                resDatas[i][5],
+                                resDatas[i][6],
+                                resDatas[i][7]);
+        }
     }
     
     function retrieveReq(string memory _reqID) public view returns (
