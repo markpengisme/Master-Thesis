@@ -1,9 +1,11 @@
 #!/bin/bash
 
-## user send share warrant to 40 banks
-for ((i=1; i<71; i++));
+## user send share warrant to banks
+dir=$(ls -d bank* | awk '$1=$1' RS="/\n" ORS=" ")
+for d in $dir
 do
-    cd bank$i
+    echo $d
+    cd $d
     bankName=$(cat .env | grep NAME | cut -d '"' -f 2)
     bankPK=$(cat key/ecc.pub)
     bankUrl="http://localhost:"$(cat .env | grep PORT | cut -d '"' -f 2)
@@ -20,7 +22,6 @@ do
         \"rawData\": \"$rawData\"
     }"
     cd ..
-    echo ""
     sleep 1
 done
 

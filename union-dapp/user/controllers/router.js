@@ -27,7 +27,7 @@ router.post('/request-warrant', (req, res, next) => {
         res.send("Send Request Warrant Success\n")
     })
     .catch(error => {
-        Logger.error(error.toString());
+        Logger.error(error.stack);
         res.send("Send Request Warrant Fail!\n")
     })  
 })
@@ -60,7 +60,7 @@ router.post('/share-warrant', async(req, res) => {
         res.send("Send Share Warrant Success!\n")
     })
     .catch( error => {
-        Logger.error(error.toString());
+        Logger.error(error.stack);
         res.send("Send Request Warrant Fail!\n")
     })  
 })
@@ -81,7 +81,7 @@ router.post('/response-file', (req, res) => {
             const filename = `./file/${Date.now()}.pdf`
             fs.writeFile(filename, kycFile, 'hex', (err) =>{
                 if (err)
-                    Logger.error(error.toString());
+                    Logger.error(error.stack);
                 else
                     Logger.log(`File${index+1}: Data save to ${filename}.`)
             })

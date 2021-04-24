@@ -18,12 +18,13 @@ echo -n  > ./user/record/start.csv
 echo -n  > ./user/record/end.csv
 for ((i=0; i<$n; i++));
 do  
+    echo "No."$i" times"
     curl -X POST http://localhost:3001/request-warrant \
     -H "Content-Type: application/json" \
     -d '{ 
-            "bankName": "bank1",
+            "bankName": "bank100",
             "bankPK": "3056301006072a8648ce3d020106052b8104000a034200043f7e77a1ef39b79db54539f8cc406bec080fa23b3101a262c4beea2e7a8b882659b01c70c646ac0ed3dd91c2e89db48cabf2df439993e86da59e9ba637a51c5d",
-            "bankUrl": "http://localhost:4001",
+            "bankUrl": "http://localhost:4100",
             "unionPK": "3056301006072a8648ce3d020106052b8104000a034200042b8e46ce5f1601ef349d59966ab36fc29c72f540034ce36c729aa08420a643138abea8ef2a7701f6650873695324344039377c645f398f306018f1e234a6ac45"
         }'
     sleep $t

@@ -31,6 +31,13 @@ class Contract {
         return res
     }
 
+    async proxyResponses (reqID, resData) {
+        // response 10 at most at a time
+        // resData type is string[8][] memory
+        let res = await this.contract.methods.proxyResponses(reqID, resData).send({from: this.ADDRESS , gas: this.GASLIMIT * 100})
+        return res
+    }
+
     async retreiveShareIDList(reqID) {
         let shareIDList = await this.contract.methods.retreiveShareIDList(reqID).call({from: this.ADDRESS })
         return shareIDList
