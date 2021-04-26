@@ -74,3 +74,15 @@
     - Reason: quorum([ref](https://github.com/ConsenSys/quorum/issues/1081))
     - Solution: Specify a high gaslimit`send({from: ADDRESS , gas: GASLIMIT}`)
 
+
+
+## Experiment
+
+- 8: 2/2/2/2
+
+```
+[Statistics]
+Total request 100 times, and 29.73 seconds per request.
+Each request takes an average of 14.79 seconds to process.
+Lost 0 request(s) in total
+```
