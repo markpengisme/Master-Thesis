@@ -150,3 +150,11 @@ Each request takes an average of 35.69 seconds to process.
 Lost 0 request(s) in total
 ```
 
+- 128: 2/2/2/122
+
+```
+[Statistics]
+Total request 100 times, and 118.85 seconds per request.
+Each request takes an average of 81.69 seconds to process.
+Lost 0 request(s) in total
+```
