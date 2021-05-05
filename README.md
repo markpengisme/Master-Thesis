@@ -1,25 +1,5 @@
 # Double-Blind-KYC-Data-Sharing-on-Blockchain
 
-## Todo
-
-- Scale experiment(5kb)
-    - `2222`
-    - `3333` vs `6222`
-    - `4444` vs `10222`
-    - `5555` vs `14222`
-    - `6666` vs `18222`
-    - `7777` vs `22222`
-    - `8888` vs `26222`
-    - `9999` vs `30222`
-    - `10101010` vs`34222`
-
-    ```txt
-    [Statistics - 2222]
-    Total request 100 times, and 29.73 seconds per request.
-    Each request takes an average of 20.75 seconds to process.
-    Lost 0 request(s) in total
-    ```
-
 - auditor features
 
 ## 變數名稱
@@ -49,16 +29,25 @@
 - bankPK
 - unionPK
 
-## 單位
+## Role
 
-- XXXX(http server port / quorum websockets port / ipfs api port)
+(http server port / quorum websockets port / ipfs api port)
+
 - user:3001
-- bank1:4001
-- bank2:4002
-- bank3:4003
 - audior:5000/23000/7000
 - unionA: 5001/23001/7001
+    - bank100:4100
+    - ...
 - unionB: 5002/23002/7002
+    - bank200:4200
+    - ...
+- unionC: 5003/23003/7003
+    - bank300:4300
+    - ...
+- unionD: 5004/23004/7004
+    - bank400:4400
+    - ...
+
 
 ## Debug
 
@@ -77,6 +66,8 @@
 
 
 ## Experiment
+
+### 5kb
 
 - 8: 2/2/2/2
 
