@@ -34,6 +34,9 @@ else
     else
         ud=$4
     fi
+    
+    cd ../auditor
+    npm run dev >> .log &
     cd ../unionA
     BANKNUM=$ua npm run dev >> .log &
     cd ../unionB

@@ -12,15 +12,17 @@ class IPFS {
 
     async get(cid) {
         const content = []
-        for await (const file of this.ipfs.get(cid)) {
-            if (!file.content) continue;
-            for await (const chunk of file.content) {
-                content.push(chunk)
-            }
-            return content.join('')
-        }
+        if (cid) {
+            for await (const file of this.ipfs.get(cid)) {
+                if (file.content){
+                    for await (const chunk of file.content) {
+                        content.push(chunk)
+                    }
+                }
+            }  
+        }  
+        return content.join('')
     }
-
 }
 
 module.exports = IPFS

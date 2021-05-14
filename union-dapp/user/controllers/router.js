@@ -67,29 +67,33 @@ router.post('/share-warrant', async(req, res) => {
 
 // get response file 
 router.post('/response-file', (req, res) => {
-    const {reqID, encFiles} = req.body
-    Logger.log(`Get Response Files(${reqID.substr(0,40)}...)`)
-    res.send("User Get Response File Success!")
+    const {reqID, batchnum, encFiles} = req.body
+    if (reqID !== undefined && batchnum === undefined ){
+        Logger.log(`Get response file from union done(${reqID.substr(0,40)}...)`)
+        res.send("User Get Response Done Success!")
+         // record end time
+        Tracker.writeTime('./record/end.csv', reqID, Date.now())
+    } else {
+        Logger.log(`Get Response Files(${reqID.substr(0,40)}...)`)
+        res.send("User Get Response File Success!")
 
-    let n = 0
-    encFiles.forEach((encFile, index) => {
-        kycFile = crypto.aesDec(encFile)
-        if (kycFile.length < 10000){
-            const buf = Buffer.from(kycFile, 'hex');
-            Logger.log(`File${index+1}: ${buf.toString()}`)
-        } else {
-            const filename = `./file/${Date.now()}.pdf`
-            fs.writeFile(filename, kycFile, 'hex', (err) =>{
-                if (err)
-                    Logger.error(error.stack);
-                else
-                    Logger.log(`File${index+1}: Data save to ${filename}.`)
-            })
-        }
-    })
-
-    // record end time
-    Tracker.writeTime('./record/end.csv', reqID, Date.now())
+        let n = 0
+        encFiles.forEach((encFile, index) => {
+            kycFile = crypto.aesDec(encFile)
+            if (kycFile.length < 10000){
+                const buf = Buffer.from(kycFile, 'hex');
+                Logger.log(`File${index+1}: ${buf.toString()}`)
+            } else {
+                const filename = `./file/downloads/${Date.now()}.pdf`
+                fs.writeFile(filename, kycFile, 'hex', (err) =>{
+                    if (err)
+                        Logger.error(error.stack);
+                    else
+                        Logger.log(`File${index+1 + batchnum*10}: Data save to ${filename}.`)
+                })
+            }
+        })
+    }
 })
 
 module.exports = router

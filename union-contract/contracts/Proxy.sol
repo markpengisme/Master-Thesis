@@ -7,8 +7,9 @@ pragma experimental ABIEncoderV2;
  * @dev Store & retrieve value in a variable
  */
 contract Proxy {
-    event reqEvent(string dataOwner, string reqID);
-    event resEvent(string proxy, string reqID);
+    event reqEvent(string reqID);
+    event resEvent(string shareID, string reqID);
+    event resEndEvent(string proxy, string reqID);
 
     struct reqDetails {
         string reqID;
@@ -71,7 +72,7 @@ contract Proxy {
             reqValidtime: _reqValidtime,
             nonce: _nonce
         });
-        emit reqEvent(_dataOwner, _reqID);
+        emit reqEvent(_reqID);
     }
 
     function proxyResponse (
@@ -98,6 +99,7 @@ contract Proxy {
             ipfsHash: _ipfsHash
         });
         resList[_reqID].push(_shareID);
+        emit resEvent(_shareID, _reqID);
     }
 
     function proxyResponseEnd(
@@ -111,7 +113,7 @@ contract Proxy {
         resCount[_reqID] += 1;
         resRecord[record] = true;
         if (resCount[_reqID] == UNION_NUM) {
-            emit resEvent(req[_reqID].proxy, _reqID);
+            emit resEndEvent(req[_reqID].proxy, _reqID);
         }
     }
 

@@ -102,6 +102,7 @@ class Crypto  {
     }
   
     aesEnc(text) {
+        if (!text) {return false}
         let aesKey = Buffer.from(this.aesKey, 'hex')
         let iv = Buffer.from(this.iv, 'hex')
         let cipher = crypto.createCipheriv('aes-256-cbc', aesKey, iv)
@@ -111,6 +112,7 @@ class Crypto  {
     }
 
     aesDec(text) {
+        if (!text) {return false}
         let aesKey = Buffer.from(this.aesKey, 'hex')
         let iv = Buffer.from(this.iv, 'hex')
         let decipher = crypto.createDecipheriv('aes-256-cbc', aesKey, iv)
@@ -120,6 +122,7 @@ class Crypto  {
     }
 
     rsaEnc(text, encryptPK = this.encryptPK) {
+        if (!(text && encryptPK)) {return false}
         encryptPK = crypto.createPublicKey({
             'key': Buffer.from(encryptPK, 'hex'),
             'type': 'spki',
@@ -129,6 +132,7 @@ class Crypto  {
     }
 
     rsaDec(text) {
+        if (!text) {return false}
         let decryptSK = Buffer.from(this.decryptSK, 'hex')
         decryptSK = crypto.createPrivateKey({
             'key': Buffer.from(decryptSK, 'hex'),
@@ -141,6 +145,7 @@ class Crypto  {
     }
 
     eccSign(text) {
+        if (!text) {return false}
         let signSK = Buffer.from(this.signSK, 'hex')
         signSK = crypto.createPrivateKey({
             'key': Buffer.from(signSK, 'hex'),
@@ -156,6 +161,7 @@ class Crypto  {
     }
     
     eccVerify(text, signature, verifyPK = this.verifyPK) {
+        if (!(text && signature && verifyPK)) {return false}
         verifyPK = crypto.createPublicKey({
             'key': Buffer.from(verifyPK, 'hex'),
             'type': 'spki',
@@ -167,6 +173,7 @@ class Crypto  {
     }
 
     hash(text) {
+        if (!text) {return false}
         const h = crypto.createHash('sha256')
         h.end(text)
         return h.digest('hex')
