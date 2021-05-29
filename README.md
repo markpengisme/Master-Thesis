@@ -2,8 +2,7 @@
 
 ## TODO
 
-- more experiment
-- auditor features
+- todo 1~8 banks experiments
 - https test
 - react frontend
 
