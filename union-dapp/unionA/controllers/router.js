@@ -140,24 +140,26 @@ router.post('/response-file', async (req, res) => {
         }
 
         if (reqID !== undefined) {
-            const now = Tracker.increamentCounter(reqID)
+            const now = Tracker.increamentCounter(reqID);
+            const resDatas = Tracker.resDatas[reqID]
             // get all bank responses
-            if (now == Bank.length) {
+            if (now === Bank.length ) {
                 // response 10 at most at a time
-                let times = Math.ceil(Tracker.resDatas[reqID].length / 10)
-                for (var i = 0; i < times; i++) {
-                    Logger.log(
-                        'Proxy response length:',
-                        Tracker.resDatas[reqID].slice(i * 10, (i + 1) * 10)
-                            .length
-                    )
-                    await contract.proxyResponses(
-                        reqID,
-                        Tracker.resDatas[reqID].slice(i * 10, (i + 1) * 10)
-                    )
+                if (resDatas !== undefined) {
+                    const times = Math.ceil(resDatas.length / 10)
+                    for (var i = 0; i < times; i++) {
+                        Logger.log(
+                            "Proxy response length:",
+                            resDatas.slice(i * 10, (i + 1) * 10).length
+                        );
+                        await contract.proxyResponses(
+                            reqID,
+                            resDatas.slice(i * 10, (i + 1) * 10)
+                        );
+                    }
                 }
-                await contract.proxyResponseEnd(reqID)
-                Logger.log(`Proxy Response End!(${reqID.substr(0, 40)}...)`)
+                await contract.proxyResponseEnd(reqID);
+                Logger.log(`Proxy Response End!(${reqID.substr(0, 40)}...)`);
             }
         }
     } catch (error) {
