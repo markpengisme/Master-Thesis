@@ -71,7 +71,7 @@
 
 ## Experiment
 
-### 5kb
+### 24bytes
 
 - 8: 2/2/2/2
 
@@ -153,3 +153,15 @@ Total request 100 times, and 118.85 seconds per request.
 Each request takes an average of 81.69 seconds to process.
 Lost 0 request(s) in total
 ```
+
+### 5mb
+
+- 8: 2/2/2/2
+
+```
+[Statistics]
+Total request 5 times, and 80.03 seconds per request.
+Each request takes an average of 23.37 seconds to process.
+Lost 0 request(s) in total
+```
+
