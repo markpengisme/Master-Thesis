@@ -2,7 +2,6 @@
 
 ## TODO
 
-- todo 1~8 banks experiments
 - https test
 - react frontend
 
@@ -160,7 +159,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 80.03 seconds per request.
+Total request 5 times, and 80.03 seconds per request.
 Each request takes an average of 23.37 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -169,7 +168,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 160.05 seconds per request.
+Total request 5 times, and 160.05 seconds per request.
 Each request takes an average of 32.57 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -178,7 +177,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 160.04 seconds per request.
+Total request 5 times, and 160.04 seconds per request.
 Each request takes an average of 35.99 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -187,7 +186,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 240.05 seconds per request.
+Total request 5 times, and 240.05 seconds per request.
 Each request takes an average of 55.14 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -196,7 +195,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 240.04 seconds per request.
+Total request 5 times, and 240.04 seconds per request.
 Each request takes an average of 66.69 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -205,7 +204,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 320.08 seconds per request.
+Total request 5 times, and 320.08 seconds per request.
 Each request takes an average of 118.72 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -214,7 +213,7 @@ Lost 0 request(s) in total
 
 ```
 [Statistics]
-Total request 30 times, and 320.07 seconds per request.
+Total request 5 times, and 320.07 seconds per request.
 Each request takes an average of 143.88 seconds to process.
 Lost 0 request(s) in total
 ```
@@ -236,3 +235,7 @@ Total request 5 times, and 400.09 seconds per request.
 Each request takes an average of 354.06 seconds to process.
 Lost 0 request(s) in total
 ```
+
+### 5mb : 1~8 banks in 2/2/2/2
+
+
